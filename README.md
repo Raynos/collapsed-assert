@@ -13,21 +13,26 @@ collapse TAP assert statements into a single line
 ## Example
 
 ```js
-var collapsedAssert = require("collapsed-assert");
+var CollapsedAssert = require("collapsed-assert");
 
-// TODO. Show example
-```
+/*  Use this when you want to do unit test assertions on
+    large arrays or assertions for EVERY test before/after.
 
-## Docs
+    This will stop `tape` printing one hundred lines of
+    `ok N should be equal` and allows you to collapse that into
+    a single line.
 
-### `var someValue = collapsedAssert(/*arguments*/)`
+    If any of the assertions fails it will pass through all
+    success & failures raw to the underlying `t`, but if they
+    all succeed it's collapsed into a single
 
-<!--
-  This is a jsig notation of your interface.
-  https://github.com/Raynos/jsig
--->
-```ocaml
-collapsed-assert := (arg: Any) => void
+    `ok N should be ok`
+*/
+var cassert = new CollapsedAssert()
+for (const item of items) {
+  cassert.equal(item.foo, 'foo')
+}
+cassert.report(t, 'all items are good')
 ```
 
 // TODO. State what the module does.
