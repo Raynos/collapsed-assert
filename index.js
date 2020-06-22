@@ -21,26 +21,23 @@
 'use strict'
 
 var nodeAssert = require('assert')
+var KNOWN_ERROR = new Error('known')
 
 module.exports = CollapsedAssert
 
-// TODO more methods
 function CollapsedAssert () {
   if (!(this instanceof CollapsedAssert)) {
     return new CollapsedAssert()
   }
 
-  var self = this
-
-  self._consumed = false
-  self._commands = []
-  self._failed = false
+  this._consumed = false
+  this._commands = []
+  this._failed = false
 }
 
 CollapsedAssert.prototype.hasFailed =
 function hasFailed () {
-  var self = this
-  return self._failed
+  return this._failed
 }
 
 CollapsedAssert.prototype._check =
@@ -74,33 +71,116 @@ CollapsedAssert.prototype.fail = function fail (msg, extra) {
   this._check(true, ['fail', msg, extra])
 }
 
-CollapsedAssert.prototype.report = function report (realAssert, message) {
-  var self = this
+CollapsedAssert.prototype.deepEqual =
+function deepEqual (a, b, msg, extra) {
+  this._check(!tryAssert(function _tryDeepEqual () {
+    // eslint-disable-next-line node/no-deprecated-api
+    nodeAssert.deepEqual(a, b, KNOWN_ERROR)
+  }), ['deepEqual', a, b, msg, extra])
+}
 
+CollapsedAssert.prototype.deepStrictEqual =
+function deepStrictEqual (a, b, msg, extra) {
+  this._check(!tryAssert(function _tryDeepStrictEqual () {
+    nodeAssert.deepStrictEqual(a, b, KNOWN_ERROR)
+  }), ['deepStrictEqual', a, b, msg, extra])
+}
+
+CollapsedAssert.prototype.doesNotMatch =
+function doesNotMatch (string, regexp, msg, extra) {
+  this._check(
+    string.match(regexp),
+    ['doesNotMatch', string, regexp, msg, extra]
+  )
+}
+
+CollapsedAssert.prototype.doesNotThrow =
+function doesNotThrow (fn, expected, msg, extra) {
+  this._check(!tryAssert(function _tryDoesNotThrow () {
+    try {
+      nodeAssert.doesNotThrow(fn, expected, msg)
+    } catch (_) {
+      throw KNOWN_ERROR
+    }
+  }), ['doesNotThrow', fn, expected, msg, extra])
+}
+
+CollapsedAssert.prototype.match =
+function match (string, regexp, msg, extra) {
+  this._check(!string.match(regexp),
+    ['match', string, regexp, msg, extra]
+  )
+}
+
+CollapsedAssert.prototype.notDeepEqual =
+function notDeepEqual (a, b, msg, extra) {
+  this._check(!tryAssert(function _tryNotDeepEqual () {
+    // eslint-disable-next-line node/no-deprecated-api
+    nodeAssert.notDeepEqual(a, b, KNOWN_ERROR)
+  }), ['notDeepEqual', a, b, msg, extra])
+}
+
+CollapsedAssert.prototype.notDeepStrictEqual =
+function notDeepStrictEqual (a, b, msg, extra) {
+  this._check(!tryAssert(function _tryNotDeepStrictEqual () {
+    nodeAssert.notDeepStrictEqual(a, b, KNOWN_ERROR)
+  }), ['notDeepStrictEqual', a, b, msg, extra])
+}
+
+CollapsedAssert.prototype.notStrictEqual =
+function notStrictEqual (a, b, msg, extra) {
+  this._check(a === b, ['notStrictEqual', a, b, msg, extra])
+}
+
+CollapsedAssert.prototype.strictEqual =
+function strictEqual (a, b, msg, extra) {
+  this._check(a !== b, ['strictEqual', a, b, msg, extra])
+}
+
+CollapsedAssert.prototype.throws =
+function throws (fn, expected, msg, extra) {
+  this._check(!tryAssert(function _tryThrows () {
+    try {
+      nodeAssert.throws(fn, expected, msg)
+    } catch (_) {
+      throw KNOWN_ERROR
+    }
+  }), ['throws', fn, expected, msg, extra])
+}
+
+CollapsedAssert.prototype.report = function report (realAssert, message) {
   nodeAssert(message, 'must pass message')
-  realAssert.ok(!self._failed, message)
-  if (self._failed) {
-    self.passthru(realAssert)
+  realAssert.ok(!this._failed, message)
+  if (this._failed) {
+    this.passthru(realAssert)
   } else {
-    self._consumed = true
+    this._consumed = true
   }
 }
 
 CollapsedAssert.prototype.passthru = function passthru (realAssert) {
-  var self = this
-
-  for (var i = 0; i < self._commands.length; i++) {
-    var command = self._commands[i]
+  for (var i = 0; i < this._commands.length; i++) {
+    var command = this._commands[i]
 
     var method = command.shift()
     realAssert[method].apply(realAssert, command)
   }
-  self._consumed = true
+  this._consumed = true
 }
 
 CollapsedAssert.prototype.comment =
 function comment (msg) {
-  var self = this
+  this._commands.push(['comment', msg])
+}
 
-  self._commands.push(['comment', msg])
+// Try the fn, if it doesnt fail the assertion then pass
+// If it throws the KNOWN_ERROR then false, otherwise rethrow
+function tryAssert (fn) {
+  try {
+    fn()
+    return true
+  } catch (err) {
+    if (err === KNOWN_ERROR) return false
+    throw err
+  }
 }
