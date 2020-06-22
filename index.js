@@ -18,89 +18,89 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-'use strict';
+'use strict'
 
-var nodeAssert = require('assert');
+var nodeAssert = require('assert')
 
-module.exports = CollapsedAssert;
+module.exports = CollapsedAssert
 
 // TODO more methods
-function CollapsedAssert() {
-    if (!(this instanceof CollapsedAssert)) {
-        return new CollapsedAssert();
-    }
+function CollapsedAssert () {
+  if (!(this instanceof CollapsedAssert)) {
+    return new CollapsedAssert()
+  }
 
-    var self = this;
+  var self = this
 
-    self._consumed = false;
-    self._commands = [];
-    self._failed = false;
+  self._consumed = false
+  self._commands = []
+  self._failed = false
 }
 
 CollapsedAssert.prototype.hasFailed =
-function hasFailed() {
-    var self = this;
-    return self._failed;
-};
+function hasFailed () {
+  var self = this
+  return self._failed
+}
 
 CollapsedAssert.prototype._check =
-function _check(fail, cmd) {
-    if (this._consumed) {
-        throw new Error('collapsed assert ' + cmd[0] + ' after consumption');
-    }
-    if (fail) {
-        this._failed = true;
-    }
-    this._commands.push(cmd);
-};
+function _check (fail, cmd) {
+  if (this._consumed) {
+    throw new Error('collapsed assert ' + cmd[0] + ' after consumption')
+  }
+  if (fail) {
+    this._failed = true
+  }
+  this._commands.push(cmd)
+}
 
-CollapsedAssert.prototype.ifError = function ifError(err, msg, extra) {
-    this._check(err, ['ifError', err, msg, extra]);
-};
+CollapsedAssert.prototype.ifError = function ifError (err, msg, extra) {
+  this._check(err, ['ifError', err, msg, extra])
+}
 
-CollapsedAssert.prototype.equal = function equal(a, b, msg, extra) {
-    this._check(a !== b, ['equal', a, b, msg, extra]);
-};
+CollapsedAssert.prototype.equal = function equal (a, b, msg, extra) {
+  this._check(a !== b, ['equal', a, b, msg, extra])
+}
 
-CollapsedAssert.prototype.notEqual = function notEqual(a, b, msg, extra) {
-    this._check(a === b, ['notEqual', a, b, msg, extra]);
-};
+CollapsedAssert.prototype.notEqual = function notEqual (a, b, msg, extra) {
+  this._check(a === b, ['notEqual', a, b, msg, extra])
+}
 
-CollapsedAssert.prototype.ok = function ok(bool, msg, extra) {
-    this._check(!bool, ['ok', bool, msg, extra]);
-};
+CollapsedAssert.prototype.ok = function ok (bool, msg, extra) {
+  this._check(!bool, ['ok', bool, msg, extra])
+}
 
-CollapsedAssert.prototype.fail = function fail(msg, extra) {
-    this._check(true, ['fail', msg, extra]);
-};
+CollapsedAssert.prototype.fail = function fail (msg, extra) {
+  this._check(true, ['fail', msg, extra])
+}
 
-CollapsedAssert.prototype.report = function report(realAssert, message) {
-    var self = this;
+CollapsedAssert.prototype.report = function report (realAssert, message) {
+  var self = this
 
-    nodeAssert(message, 'must pass message');
-    realAssert.ok(!self._failed, message);
-    if (self._failed) {
-        self.passthru(realAssert);
-    } else {
-        self._consumed = true;
-    }
-};
+  nodeAssert(message, 'must pass message')
+  realAssert.ok(!self._failed, message)
+  if (self._failed) {
+    self.passthru(realAssert)
+  } else {
+    self._consumed = true
+  }
+}
 
-CollapsedAssert.prototype.passthru = function passthru(realAssert) {
-    var self = this;
+CollapsedAssert.prototype.passthru = function passthru (realAssert) {
+  var self = this
 
-    for (var i = 0; i < self._commands.length; i++) {
-        var command = self._commands[i];
+  for (var i = 0; i < self._commands.length; i++) {
+    var command = self._commands[i]
 
-        var method = command.shift();
-        realAssert[method].apply(realAssert, command);
-    }
-    self._consumed = true;
-};
+    var method = command.shift()
+    realAssert[method].apply(realAssert, command)
+  }
+  self._consumed = true
+}
 
 CollapsedAssert.prototype.comment =
-function comment(msg) {
-    var self = this;
+function comment (msg) {
+  var self = this
 
-    self._commands.push(['comment', msg]);
-};
+  self._commands.push(['comment', msg])
+}
