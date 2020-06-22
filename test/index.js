@@ -31,3 +31,23 @@ test('use collapsed assert failing', (t) => {
   }, /expect all fail/)
   t.end()
 })
+
+test('use deepEqual', (t) => {
+  const cassert = new CollapsedAssert()
+
+  for (let i = 0; i < 10; i++) {
+    cassert.deepEqual(i, i, 'expect same')
+  }
+  cassert.report(t, 'all pass')
+
+  const cassert2 = new CollapsedAssert()
+
+  for (let i = 0; i < 10; i++) {
+    cassert2.deepEqual(i, i + 1, 'expect same')
+  }
+  t.throws(() => {
+    cassert2.report(assert, 'expect all fail')
+  }, /expect all fail/)
+
+  t.end()
+})

@@ -21,10 +21,10 @@
 'use strict'
 
 var nodeAssert = require('assert')
+var KNOWN_ERROR = new Error('known')
 
 module.exports = CollapsedAssert
 
-// TODO more methods
 function CollapsedAssert () {
   if (!(this instanceof CollapsedAssert)) {
     return new CollapsedAssert()
@@ -74,6 +74,26 @@ CollapsedAssert.prototype.fail = function fail (msg, extra) {
   this._check(true, ['fail', msg, extra])
 }
 
+CollapsedAssert.prototype.deepEqual =
+function deepEqual (a, b, msg, extra) {
+  this._check(!tryAssert(function _tryDeepEqual () {
+    // eslint-disable-next-line node/no-deprecated-api
+    nodeAssert.deepEqual(a, b, KNOWN_ERROR)
+  }), ['deepEqual', a, b, msg, extra])
+}
+
+CollapsedAssert.prototype.deepStrictEqual;
+CollapsedAssert.prototype.doesNotMatch;
+CollapsedAssert.prototype.doesNotReject;
+CollapsedAssert.prototype.doesNotThrow;
+CollapsedAssert.prototype.match;
+CollapsedAssert.prototype.notDeepEqual;
+CollapsedAssert.prototype.notDeepStrictEqual;
+CollapsedAssert.prototype.notStrictEqual;
+CollapsedAssert.prototype.rejects;
+CollapsedAssert.prototype.strictEqual;
+CollapsedAssert.prototype.throws;
+
 CollapsedAssert.prototype.report = function report (realAssert, message) {
   var self = this
 
@@ -103,4 +123,16 @@ function comment (msg) {
   var self = this
 
   self._commands.push(['comment', msg])
+}
+
+// Try the fn, if it doesnt fail the assertion then pass
+// If it throws the KNOWN_ERROR then false, otherwise rethrow
+function tryAssert (fn) {
+  try {
+    fn()
+    return true
+  } catch (err) {
+    if (err === KNOWN_ERROR) return false
+    throw err
+  }
 }
