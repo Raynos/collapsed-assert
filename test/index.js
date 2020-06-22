@@ -1,10 +1,33 @@
 'use strict'
 
-var test = require('tape')
+const test = require('tape')
+const assert = require('assert')
 
-var collapsedAssert = require('../index.js')
+const CollapsedAssert = require('../index.js')
 
-test('collapsedAssert is a function', function t (assert) {
-  assert.equal(typeof collapsedAssert, 'function')
-  assert.end()
+test('CollapsedAssert is a function', (t) => {
+  t.equal(typeof CollapsedAssert, 'function')
+  t.end()
+})
+
+test('use collapsed assert', (t) => {
+  const cassert = new CollapsedAssert()
+
+  for (let i = 0; i < 10; i++) {
+    cassert.equal(i, i, 'expect same')
+  }
+  cassert.report(t, 'all pass')
+  t.end()
+})
+
+test('use collapsed assert failing', (t) => {
+  const cassert = new CollapsedAssert()
+
+  for (let i = 0; i < 10; i++) {
+    cassert.equal(i, i + 1, 'expect same')
+  }
+  t.throws(() => {
+    cassert.report(assert, 'expect all fail')
+  }, /expect all fail/)
+  t.end()
 })
