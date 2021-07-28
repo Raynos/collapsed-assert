@@ -96,9 +96,10 @@ function doesNotMatch (string, regexp, msg, extra) {
 
 CollapsedAssert.prototype.doesNotThrow =
 function doesNotThrow (fn, expected, msg, extra) {
+  var args = arguments
   this._check(!tryAssert(function _tryDoesNotThrow () {
     try {
-      nodeAssert.doesNotThrow(fn, expected, msg)
+      nodeAssert.doesNotThrow.apply(nodeAssert, args)
     } catch (_) {
       throw KNOWN_ERROR
     }
@@ -139,9 +140,10 @@ function strictEqual (a, b, msg, extra) {
 
 CollapsedAssert.prototype.throws =
 function throws (fn, expected, msg, extra) {
+  var args = arguments
   this._check(!tryAssert(function _tryThrows () {
     try {
-      nodeAssert.throws(fn, expected, msg)
+      nodeAssert.throws.apply(nodeAssert, args)
     } catch (_) {
       throw KNOWN_ERROR
     }
